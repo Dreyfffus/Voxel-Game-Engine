@@ -1,3 +1,5 @@
+dofile("../Project-Config.lua")
+
 project "Game-Engine"
    kind "ConsoleApp"
    language "C++"
@@ -10,15 +12,30 @@ project "Game-Engine"
    includedirs
    {
       "Source",
+	  "../Game-Core/Source",
+      "%{IncludeDir.GLM}",
+      "%{IncludeDir.SDL3}",
+      "%{IncludeDir.Vulkan}",
+      "%{IncludeDir.GLFW}"
+   }
 
-	  -- Include Core
-	  "../Game-Core/Source"
+   libdirs
+   {
+      "%{LibraryDir.Vulkan}",
+      "%{LibraryDir.SDL3}",
+      "%{LibraryDir.GLFW}"
    }
 
    links
    {
-      "Game-Core"
+      "Game-Core",
+      "%{Library.Vulkan}",
+      "%{Library.SDL3}",
+      "%{Library.GLFW}"
    }
+
+   buildoptions { "/VERBOSE" }
+   linkoptions { "/VERBOSE" }
 
    targetdir ("../Binaries/" .. OutputDir .. "/%{prj.name}")
    objdir ("../Binaries/Intermediates/" .. OutputDir .. "/%{prj.name}")

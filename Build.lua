@@ -1,10 +1,8 @@
--- premake5.lua
 workspace "Game-Engine"
-   architecture "x64"
+   architecture "x86_64"
    configurations { "Debug", "Release", "Dist" }
    startproject "Game-Engine"
 
-   -- Workspace-wide build options for MSVC
    filter "system:windows"
       buildoptions { "/EHsc", "/Zc:preprocessor", "/Zc:__cplusplus" }
 
