@@ -1,9 +1,10 @@
 project "Game-Core"
    kind "StaticLib"
    language "C++"
-   cppdialect "C++20"
+   cppdialect "C++latest"
    targetdir "Binaries/%{cfg.buildcfg}"
    staticruntime "off"
+   toolset "msc"
 
    files { "Source/**.h", "Source/**.cpp" }
 

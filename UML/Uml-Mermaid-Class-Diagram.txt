@@ -1,0 +1,209 @@
+classDiagram
+direction LR
+
+class App {
+  +run()
+  -window: Window
+  -renderer: Renderer
+}
+
+class Window {
+  +width: uint32_t
+  +height: uint32_t
+  +createSurface(instance): VkSurfaceKHR
+}
+
+class Renderer {
+  +init()
+  +renderFrame()
+  +recreateSwapchain()
+  -instance: Instance
+  -debug: DebugMessenger
+  -surface: Surface
+  -deviceSel: DeviceSelector
+  -device: Device
+  -swapchain: Swapchain
+  -depth: DepthStencil
+  -renderPass: RenderPass
+  -framebuffers: Framebuffer[*]
+  -pipelineLayout: PipelineLayout
+  -pipeline: GraphicsPipeline
+  -shaderCache: ShaderModuleCache
+  -cmdPool: CommandPool
+  -frames: Frame[*]
+  -descLayoutCache: DescriptorSetLayoutCache
+  -descAlloc: DescriptorAllocator
+  -upload: UploadContext
+}
+
+class Instance {
+  +handle: VkInstance
+  +layers: string[]
+  +extensions: string[]
+}
+
+class DebugMessenger {
+  +handle: VkDebugUtilsMessengerEXT
+}
+
+class Surface {
+  +handle: VkSurfaceKHR
+}
+
+class DeviceSelector {
+  +pick(Instance, Surface): Device
+  -graphicsFamily: uint32_t
+  -presentFamily: uint32_t
+  -transferFamily: uint32_t
+}
+
+class Device {
+  +handle: VkDevice
+  +physical: VkPhysicalDevice
+  +graphicsQ: VkQueue
+  +presentQ: VkQueue
+  +transferQ: VkQueue
+  +graphicsFamily: uint32_t
+  +presentFamily: uint32_t
+  +transferFamily: uint32_t
+}
+
+class Swapchain {
+  +handle: VkSwapchainKHR
+  +images: VkImage[*]
+  +format: VkFormat
+  +extent: VkExtent2D
+  +imageViews: VkImageView[*]
+}
+
+class DepthStencil {
+  +image: VkImage
+  +view: VkImageView
+  +format: VkFormat
+}
+
+class RenderPass {
+  +handle: VkRenderPass
+}
+
+class Framebuffer {
+  +handle: VkFramebuffer
+}
+
+class ShaderModuleCache {
+  +get(path): VkShaderModule
+}
+
+class PipelineLayout {
+  +handle: VkPipelineLayout
+  -setLayouts: VkDescriptorSetLayout[*]
+  -pushRanges: VkPushConstantRange[*]
+}
+
+class GraphicsPipeline {
+  +handle: VkPipeline
+}
+
+class CommandPool {
+  +handle: VkCommandPool
+}
+
+class CommandBuffer {
+  +handle: VkCommandBuffer
+  +begin()
+  +end()
+}
+
+class FrameSync {
+  +imageAvailable: VkSemaphore
+  +renderFinished: VkSemaphore
+  +inFlight: VkFence
+}
+
+class Frame {
+  +index: uint32_t
+  -cmd: CommandBuffer
+  -sync: FrameSync
+  -framebuffer: Framebuffer
+}
+
+class Buffer {
+  +handle: VkBuffer
+  +size: VkDeviceSize
+  +map(): void*
+  +unmap()
+  -memory: VkDeviceMemory
+}
+
+class Image {
+  +image: VkImage
+  +view: VkImageView
+  +layout: VkImageLayout
+  -memory: VkDeviceMemory
+}
+
+class Allocator {
+  +allocBuffer(size,usage,props): Buffer
+  +allocImage(info,props): Image
+}
+
+class DescriptorSetLayoutCache {
+  +get(layoutInfo): VkDescriptorSetLayout
+}
+
+class DescriptorAllocator {
+  +allocate(layout): VkDescriptorSet
+  +reset()
+}
+
+class DescriptorWriter {
+  +writeBuffer(binding,desc)
+  +writeImage(binding,desc)
+  +build(allocator,layout): VkDescriptorSet
+}
+
+class UploadContext {
+  +immediateSubmit(fn)
+  -tempCmdPool: CommandPool
+  -tempCmd: CommandBuffer
+  -fence: VkFence
+  -staging: StagingBuffer
+}
+
+class StagingBuffer {
+  -buffer: Buffer
+}
+
+%% Relationships
+App *-- Window
+App *-- Renderer
+
+Window ..> Surface : creates
+Renderer *-- Instance
+Renderer o-- DebugMessenger
+Renderer *-- Surface
+Renderer *-- DeviceSelector
+Renderer *-- Device
+Renderer *-- Swapchain
+Renderer *-- DepthStencil
+Renderer *-- RenderPass
+Renderer *-- Framebuffer : owns[*]
+Renderer *-- PipelineLayout
+Renderer *-- GraphicsPipeline
+Renderer *-- ShaderModuleCache
+Renderer *-- CommandPool
+Renderer *-- Frame : owns[*]
+Frame *-- CommandBuffer
+Frame *-- FrameSync
+Frame *-- Framebuffer
+
+Buffer o-- Allocator
+Image o-- Allocator
+Renderer *-- DescriptorSetLayoutCache
+Renderer *-- DescriptorAllocator
+DescriptorWriter ..> DescriptorAllocator
+DescriptorWriter ..> DescriptorSetLayoutCache : uses layout
+Renderer *-- UploadContext
+UploadContext *-- StagingBuffer
+Swapchain *-- Framebuffer : builds per image
+DeviceSelector ..> Device : returns
